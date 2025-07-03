@@ -18,7 +18,25 @@ from docx2pdf import convert
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
+#########################
+import sys
+try:
+    import pythoncom
+except ImportError:
+    pythoncom = None
 
+from docx2pdf import convert
+
+def convert_to_pdf(docx_path, pdf_path):
+    if pythoncom and sys.platform == "win32":
+        pythoncom.CoInitialize()
+        convert(docx_path, pdf_path)
+        pythoncom.CoUninitialize()
+    else:
+        # Fallback (e.g., skip conversion or use alternative)
+        print("PDF conversion not supported on this platform")
+        # Optionally, implement pdfkit or libreoffice here
+##################################################################################################################3
 # Directories
 app.config['UPLOAD_DIR'] = 'uploads'
 app.config['SIGNATURE_DIR'] = os.path.join(app.config['UPLOAD_DIR'], 'signatures').replace('\\', '/')
