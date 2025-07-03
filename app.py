@@ -15,7 +15,14 @@ from docx.oxml import OxmlElement
 from flask import Flask, request, render_template, redirect, url_for, flash, session, send_file
 from werkzeug.utils import secure_filename
 from docx2pdf import convert
+######
+import subprocess
+import os
+import uuid
+from docx import Document
+from io import BytesIO
 
+# ... (other imports and code remain unchanged)
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
 # Directories
@@ -655,12 +662,24 @@ def generate_pdf(content, pdf_filename):
     try:
         with open(docx_filepath, 'wb') as f:
             f.write(doc_buffer.getvalue())
-        pythoncom.CoInitialize()  # Add this line before convert
-        try:
-            convert(docx_filepath, pdf_filepath)
-        finally:
-            pythoncom.CoUninitialize()  # Add this line to clean up COM
+        
+        # Use LibreOffice to convert DOCX to PDF
+        subprocess.run([
+            'soffice',
+            '--headless',
+            '--convert-to',
+            'pdf',
+            '--outdir',
+            app.config['OUTPUT_DIR'],
+            docx_filepath
+        ], check=True)
         logger.info(f"Generated PDF: {pdf_filepath}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error generating PDF with LibreOffice: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Error generating PDF: {e}")
+        raise
     finally:
         if os.path.exists(docx_filepath):
             os.unlink(docx_filepath)
