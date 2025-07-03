@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View PDF - Chervic Advisory Services</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; }
+        .logout { text-align: right; margin-bottom: 20px; }
+        .pdf-container { width: 100%; height: 600px; border: 1px solid #ccc; }
+        .error { color: red; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="logout">
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    <h1>View Master Agreement</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="pdf-container">
+    <object data="{{ url_for('serve_pdf', filename=pdf_filename) }}" type="application/pdf" width="100%" height="100%">
+        <p>Your browser does not support PDFs. <a href="{{ url_for('serve_pdf', filename=pdf_filename) }}">Download the PDF</a> instead.</p>
+    </object>
+    </div>
+    <p><a href="{{ url_for('edit_nda_lines', filename=pdf_filename) }}">Edit PDF Lines</a></p>
+    <p><a href="{{ url_for('generate_nda') }}">Back to Generate NDA</a></p>
+</body>
+</html>

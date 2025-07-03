@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate NDA - Chervic Advisory Services</title>
+    <!-- Include Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="date"], input[type="file"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        canvas { border: 1px solid #000; display: block; margin: 10px 0; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .error, .success { margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+        .logout { text-align: right; margin-bottom: 20px; }
+        .form-buttons { margin-top: 20px; }
+        .form-buttons button { margin-right: 10px; }
+        .clear-button { background-color: #dc3545; }
+        .clear-button:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="logout">
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    <h1>Generate Master Agreement</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST" enctype="multipart/form-data" id="ndaForm">
+        <div class="form-group">
+            <label for="customer_name">Customer Name:</label>
+            <input type="text" id="customer_name" name="customer_name" value="{{ data.customer_name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="agreement_date">Agreement Date (YYYY-MM-DD):</label>
+            <input type="date" id="agreement_date" name="agreement_date" value="{{ data.agreement_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="start_date">Start Date (YYYY-MM-DD):</label>
+            <input type="date" id="start_date" name="start_date" value="{{ data.start_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date (YYYY-MM-DD):</label>
+            <input type="date" id="end_date" name="end_date" value="{{ data.end_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="billing_contact_name">Billing Contact Name:</label>
+            <input type="text" id="billing_contact_name" name="billing_contact_name" value="{{ data.billing_contact_name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="billing_email">Billing Email:</label>
+            <input type="text" id="billing_email" name="billing_email" value="{{ data.billing_email }}" required>
+        </div>
+        <div class="form-group">
+            <label for="department">Department:</label>
+            <input type="text" id="department" name="department" value="{{ data.department }}" required>
+        </div>
+        <div class="form-group">
+            <label for="billing_address">Billing Address:</label>
+            <input type="text" id="billing_address" name="billing_address" value="{{ data.billing_address }}" required>
+        </div>
+        <div class="form-group">
+            <label for="tax_id">GSTIN / Tax ID:</label>
+            <input type="text" id="tax_id" name="tax_id" value="{{ data.tax_id }}" required>
+        </div>
+        <div class="form-group">
+            <label for="po_number">PO Number (if applicable):</label>
+            <input type="text" id="po_number" name="po_number" value="{{ data.po_number }}">
+        </div>
+        <div class="form-group">
+            <label for="currency">Preferred Currency:</label>
+            <select id="currency" name="currency" required>
+                <option value="USD" {% if data.currency == 'USD' %}selected{% endif %}>USD</option>
+                <option value="INR" {% if data.currency == 'INR' %}selected{% endif %}>INR</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="chervic_name">Chervic Name:</label>
+            <input type="text" id="chervic_name" name="chervic_name" value="{{ data.chervic_name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="chervic_title">Chervic Title:</label>
+            <input type="text" id="chervic_title" name="chervic_title" value="{{ data.chervic_title }}" required>
+        </div>
+        <div class="form-group">
+            <label for="chervic_date">Chervic Date (YYYY-MM-DD):</label>
+            <input type="date" id="chervic_date" name="chervic_date" value="{{ data.chervic_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="chervic_signature">Chervic Signature (upload or draw):</label>
+            <input type="file" id="chervic_signature" name="chervic_signature" accept="image/png,image/jpeg">
+            <canvas id="chervic_signature_canvas" width="300" height="100"></canvas>
+            <input type="hidden" id="chervic_signature_data" name="chervic_signature_canvas">
+        </div>
+        <div class="form-group">
+            <label for="customer_sign_name">Customer Sign Name:</label>
+            <input type="text" id="customer_sign_name" name="customer_sign_name" value="{{ data.customer_sign_name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="customer_sign_title">Customer Sign Title:</label>
+            <input type="text" id="customer_sign_title" name="customer_sign_title" value="{{ data.customer_sign_title }}" required>
+        </div>
+        <div class="form-group">
+            <label for="customer_sign_date">Customer Sign Date (YYYY-MM-DD):</label>
+            <input type="date" id="customer_sign_date" name="customer_sign_date" value="{{ data.customer_sign_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="customer_signature">Customer Signature (upload or draw):</label>
+            <input type="file" id="customer_signature" name="customer_signature" accept="image/png,image/jpeg">
+            <canvas id="customer_signature_canvas" width="300" height="100"></canvas>
+            <input type="hidden" id="customer_signature_data" name="customer_signature_canvas">
+        </div>
+        <!-- Modification: Added Clear All and Generate NDA buttons -->
+        <div class="form-buttons">
+            <button type="submit">Generate NDA</button>
+            <button type="button" class="clear-button" onclick="clearForm()">Clear All</button>
+        </div>
+    </form>
+    <!-- Include Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Modification: Added JavaScript for Clear All functionality -->
+    <script>
+        function clearForm() {
+            const form = document.getElementById('ndaForm');
+            // Reset text inputs and select
+            form.querySelectorAll('input[type="text"], input[type="date"], select').forEach(input => {
+                if (input.type === 'date') {
+                    input.value = '';
+                } else if (input.tagName === 'SELECT') {
+                    input.value = 'USD'; // Default to USD for currency
+                } else {
+                    input.value = '';
+                }
+            });
+            // Reset file inputs
+            form.querySelectorAll('input[type="file"]').forEach(input => {
+                input.value = '';
+            });
+            // Clear canvas signatures
+            const canvases = ['chervic_signature_canvas', 'customer_signature_canvas'];
+            canvases.forEach(id => {
+                const canvas = document.getElementById(id);
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById(id.replace('_canvas', '_data')).value = '';
+            });
+            // Optional: Trigger Flatpickr reset if needed
+            flatpickr('#agreement_date', {}).clear();
+            flatpickr('#start_date', {}).clear();
+            flatpickr('#end_date', {}).clear();
+            flatpickr('#chervic_date', {}).clear();
+            flatpickr('#customer_sign_date', {}).clear();
+        }
+    </script>
+</body>
+</html>
