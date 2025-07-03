@@ -1,3 +1,5 @@
 Flask
 python-docx
-gunicorn
+docx2pdf
+werkzeug
+pywin32
